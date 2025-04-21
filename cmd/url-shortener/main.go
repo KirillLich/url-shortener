@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"os"
 	"url-shortener/internal/config"
+	"url-shortener/internal/http-server/handlers/url/save"
 	mwLogger "url-shortener/internal/http-server/middleware/logger"
 	"url-shortener/internal/lib/logger/sl"
 	"url-shortener/internal/storage/sqlite"
@@ -51,14 +52,18 @@ func main() {
 
 	//middleware
 	router.Use(middleware.RequestID)
-	router.Use(middleware.Logger)//built-in logger middleware
-	router.Use(mwLogger.New(log))//custome logger
+	router.Use(middleware.Logger) //built-in logger middleware
+	router.Use(mwLogger.New(log)) //custome logger
 	router.Use(middleware.Recoverer)
-	router.Use(middleware.URLFormat)//specific for chi
+	router.Use(middleware.URLFormat) //specific for chi
 
+	router.Post("/url", save.New(log, storage))
+
+	
 	//TODO: run server
 }
 
+// TODO: add pretty logger
 func setupLogger(env string) *slog.Logger {
 	var log *slog.Logger
 
