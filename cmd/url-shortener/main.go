@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"log/slog"
+	"net/http"
 	"os"
 	"url-shortener/internal/config"
 	"url-shortener/internal/http-server/handlers/url/save"
@@ -58,8 +59,23 @@ func main() {
 	router.Use(middleware.URLFormat) //specific for chi
 
 	router.Post("/url", save.New(log, storage))
+	//router.Get("/{alias}", redirect.New(log, storage))
 
-	
+	log.Info("starting server", slog.String("adress", cfg.Address))
+
+	srv := &http.Server{
+		Addr:         cfg.Address,
+		Handler:      router,
+		ReadTimeout:  cfg.Timeout,
+		WriteTimeout: cfg.Timeout,
+		IdleTimeout:  cfg.IdleTimeout,
+	}
+
+	if err := srv.ListenAndServe(); err != nil {
+		log.Error("failed to run server")
+	}
+
+	log.Error("server stopped")
 	//TODO: run server
 }
 
